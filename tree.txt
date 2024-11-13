@@ -1,69 +1,35 @@
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-df = pd.read_csv('/content/Admission_Predict.csv')
-df.head()
-
 from sklearn.preprocessing import Binarizer
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, accuracy_score, classification_report
+import matplotlib.pyplot as plt
+
+df = pd.read_csv('Admission_Predict.csv')
+
 bi = Binarizer(threshold=0.75)
 df['Chance of Admit '] = bi.fit_transform(df[['Chance of Admit ']])
 
-df.head()
+x = df[['GRE Score', 'CGPA']]
+y = df['Chance of Admit '].astype('int')
 
-x = df.drop('Chance of Admit ' , axis = 1)
-y = df['Chance of Admit ']
+x_train, x_test, y_train, y_test = train_test_split(x, y, random_state=0, test_size=0.25)
 
-y = y.astype('int')
+classifier = DecisionTreeClassifier(random_state=0)
+classifier.fit(x_train, y_train)
 
-from sklearn.model_selection import train_test_split
-x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.25,random_state=1)
-print(f"Size of splitted data")
-print(f"x_train {x_train.shape}")
-print(f"y_train {y_train.shape}")
-print(f"y_train {x_test.shape}")
-print(f"y_test {y_test.shape}")
+y_pred = classifier.predict(x_test)
 
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LogisticRegression
+result = pd.DataFrame({'actual': y_test, 'predicted': y_pred})
+print(result.head())
 
-model_dt=DecisionTreeRegressor(random_state=1)
-model_rf=RandomForestRegressor(random_state=1)
-model_lr=LogisticRegression(random_state=1,max_iter=1000)
+cm = confusion_matrix(y_test, y_pred)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+disp.plot()
 
-model_lr.fit(x_train,y_train)
-model_dt.fit(x_train,y_train)
-model_rf.fit(x_train,y_train)
+print("Accuracy:", accuracy_score(y_test, y_pred))
+print(classification_report(y_test, y_pred))
 
-y_pred_dt=model_dt.predict(x_test)
-y_pred_rf=model_rf.predict(x_test)
-y_pred_lr=model_lr.predict(x_test)
-
-from sklearn.metrics import confusion_matrix,ConfusionMatrixDisplay,accuracy_score,classification_report
-
-ConfusionMatrixDisplay.from_predictions(y_test,y_pred_dt)
-plt.title('Decision Tree')
-plt.show()
-print(f"Accuracy of Decision Tree is {accuracy_score(y_test,y_pred_dt)}")
-print(classification_report(y_test,y_pred_dt))
-
-ConfusionMatrixDisplay.from_predictions(y_test,y_pred_lr)
-plt.title('Logistic Regression')
-plt.show()
-print(f"Accuracy of Decision Tree is {accuracy_score(y_test,y_pred_lr)}")
-print(classification_report(y_test,y_pred_lr))
-
-y_pred_rf = [1 if each > 0.75 else 0 for each in y_pred_rf]
-ConfusionMatrixDisplay.from_predictions(y_test,y_pred_rf,xticks_rotation='vertical')
-plt.title('Random Forest')
-plt.show()
-print(f" Accuracy is {accuracy_score(y_test,y_pred_rf)}")
-print(classification_report(y_test,y_pred_rf))
-
-from sklearn.tree import plot_tree
-
-plt.figure(figsize=(10,5))
-plot_tree(model_dt,filled=True, feature_names=x.columns, class_names=['0','1'], rounded=True)
+plt.figure(figsize=(12,12))
+plot_tree(classifier, fontsize=8, filled=True, rounded=True, feature_names=x.columns)
 plt.show()
