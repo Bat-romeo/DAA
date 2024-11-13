@@ -1,0 +1,63 @@
+#include<iostream>
+#include<algorithm>
+
+using namespace std;
+
+struct Items{
+	int weight;
+	int profit;
+	float ratio;
+};
+
+bool compare(Items a, Items b){
+	return a.ratio > b.ratio;
+}
+
+int greedy(int n, int size,Items item[]){
+
+	int max_profit=0;
+	int balance=size;
+	
+	for(int i=0;i<n;i++){
+		if(item[i].weight<=balance){
+			balance-=item[i].weight;
+			max_profit+=item[i].profit;
+		}
+		else{
+			max_profit+=item[i].profit*((float)balance / item[i].weight);
+		}
+	}
+	return max_profit;
+}
+
+int main(){
+	int n;
+	
+	cout<<"\nEnter the number of Items: ";
+	cin>>n;
+	
+	Items item[n];
+	
+	cout<<"\nEnter the Profit and Weight:"<<endl;
+	
+	for(int i=0;i<n;i++){
+		cout<<"Item "<<i+1<<" Profit: ";
+		cin>>item[i].profit;
+		
+		cout<<"Item "<<i+1<<" Weight: ";
+		cin>>item[i].weight;
+		
+		item[i].ratio=(float)item[i].profit/item[i].weight;
+	}
+	
+	sort(item,item+n,compare);
+	
+	int size;
+	
+	cout<<"\nEnter the Size of Knapsack: ";
+	cin>>size;
+	
+	int Profit=greedy(n,size,item);
+	
+	cout<<"\nThe Max Profit is: "<<Profit<<endl;
+}
