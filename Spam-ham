@@ -2,6 +2,10 @@ import numpy as np
 import pandas as pd
 df = pd.read_csv('/content/spam.csv',encoding='ISO-8859-1')
 df.head()
+df.info()
+df.groupby('v1').describe()
+df['spam'] = df['v1'].apply(lambda x:1 if x=='spam' else 0)
+df.head()
 new_df = df[['v1','v2','spam']]
 new_df.head()
 from sklearn.model_selection import train_test_split as tts
