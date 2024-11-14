@@ -1,40 +1,68 @@
-!pip install mlxtend
+// Knapsack Dynamic
+#include <iostream>
+#include <vector>
 
-import pandas as pd
-import csv
-from mlxtend.preprocessing import TransactionEncoder
-from mlxtend.frequent_patterns import apriori,association_rules 
 
-dataset = []
-with open('Market_Basket_Optimisation.csv') as file:
-    reader = csv.reader(file,delimiter=',')
-    for row in reader:
-        dataset+=[row]
+using namespace std;
 
-dataset[0:10]
+int solve(vector<int>& weight, vector<int>& value, int n, int capacity) {
+    vector<vector<int>> dp(n, vector<int>(capacity + 1, 0));
 
-len(dataset)
+    for (int w = 0; w <= capacity; ++w) {
+        if (weight[0] <= w) {
+            dp[0][w] = value[0];
+        } else {
+            dp[0][w] = 0;
+        }
+    }
 
-#Transaction encoder makes a table of items bought as column names
-# and marks true for a person if he buys it 
-#helps in collecting all the unique items
-te = TransactionEncoder()
-x = te.fit_transform(dataset)
+  
+    for (int i = 1; i < n; ++i) {
+        for (int w = 0; w <= capacity; ++w) {
+            int include = 0;
+            if (weight[i] <= w) {
+                include = value[i] + dp[i - 1][w - weight[i]];
+            }
+            int exclude = dp[i - 1][w];
+            dp[i][w] = max(include, exclude);
+        }
+    }
 
-x.shape
+   
+    return dp[n - 1][capacity];
+}
 
-df = pd.DataFrame(x,columns=te.columns_)
-df
+int main() {
+    int capacity, n;
 
-freq_itemset = apriori(df,min_support=0.01,use_colnames=True) # taking support as 10%
+    cout << "Enter capacity: ";
+    cin >> capacity;
+    
+    cout << "Enter number of items: ";
+    cin >> n;
 
-freq_itemset
+    vector<int> weight(n);
+    vector<int> value(n);
 
-rules = association_rules(freq_itemset,metric='confidence',min_threshold=0.30,support_only=false,num_itemsets=len(freq_itemset))
-rules
+    cout << "Enter weights: ";
+    for (int i = 0; i < n; ++i) {
+        cin >> weight[i];
+    }
 
-rules = rules[['antecedents','consequents','support','confidence']]
+    cout << "Enter values: ";
+    for (int i = 0; i < n; ++i) {
+        cin >> value[i];
+    }
 
-rules.head()
+    int profit = solve(weight, value, n, capacity);
+    cout << "Maximum profit is: " << profit << endl;
 
-rules[rules['antecedents']=={'cake'}]
+    return 0;
+}
+output:
+PS C:\Users\Student 04\Desktop\Shubham> g++ S.cpp
+PS C:\Users\Student 04\Desktop\Shubham> ./a.exe  
+Enter capacity: 8
+Enter number of items: 4
+Enter weights: 3 4 5 6
+Enter values: 2 3 1 4
